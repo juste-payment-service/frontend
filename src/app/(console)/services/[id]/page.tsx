@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { CredentialActions } from "@/components/services/credential-actions";
 import { ServiceForm } from "@/components/services/service-form";
-import { Alert, Badge, Card, Dl, PageHeader } from "@/components/ui";
+import { Alert, Badge, ButtonLink, Card, Dl, PageHeader } from "@/components/ui";
 import { toActionError } from "@/lib/api-errors";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { ApiError } from "@/lib/server/api-client";
@@ -39,7 +39,14 @@ export default async function ServicePage({ params }: { params: Promise<{ id: st
       <PageHeader
         title={service.name}
         description={service.description ?? undefined}
-        actions={active ? <Badge tone="green">Actif</Badge> : <Badge tone="red">Désactivé</Badge>}
+        actions={
+          <div className="flex items-center gap-3">
+            {active ? <Badge tone="green">Actif</Badge> : <Badge tone="red">Désactivé</Badge>}
+            <ButtonLink variant="secondary" href={`/transactions?service_id=${service.id}`}>
+              Voir ses transactions
+            </ButtonLink>
+          </div>
+        }
       />
 
       <Card title="Identifiants et activité">

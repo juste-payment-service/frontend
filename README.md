@@ -153,6 +153,8 @@ Déploiement Vercel (réglages, secrets, Google, DNS, retour arrière) : [`docs/
 | Services | `/services` | liste (recherche, statut, pagination), statistiques par service |
 | Nouveau service | `/services/new` | création ; identifiant, clé API et secret webhook affichés **une seule fois** |
 | Détail d'un service | `/services/{id}` | identifiants et activité, rotation de la clé API (période de grâce) et du secret webhook, activation / désactivation, configuration (URL de notification, hôtes de retour, transferts et plafonds) |
+| Transactions | `/transactions` | recherche exacte (UUID, référence client ou prestataire), filtres combinables (service, statut, type, moyen, période à l'heure du Bénin, utilisateur, transfert), tri, pagination ; filtres conservés dans l'URL |
+| Détail d'une transaction | `/transactions/{id}` | opération, parties (numéros masqués), références prestataire, historique, notifications envoyées au service (tentatives, dernier code), métadonnées, rattachement à un transfert ; revérification auprès du prestataire si elle est en attente |
 
 Organisation : pages en composants serveur (`src/app/(console)`), écritures par **actions serveur**
 (`actions.ts`) qui revérifient la session admin, valident les identifiants reçus et réutilisent la
@@ -165,4 +167,4 @@ ou le mode sandbox (`/v1/ready`).
 1. ~~Secrets Doppler côté serveur et client API admin (`server-only`)~~
 2. ~~Connexion Google (liste blanche d'adresses), CSP par nonce~~
 3. ~~Déploiement Vercel (production sur `main`, après toute la CI)~~
-4. ~~Services~~ · Transactions · Tableau de bord · Utilisateurs · Transferts · À régulariser · Explorateur d'API
+4. ~~Services~~ · ~~Transactions~~ · Tableau de bord · Utilisateurs · Transferts · À régulariser · Explorateur d'API
