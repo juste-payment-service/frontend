@@ -106,3 +106,79 @@ jobs:
           # Sans DOPPLER_TOKEN, aucune page ne doit être servie.
           page=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/)
           [ "$page" != "200" ] || { echo "Page servie sans secrets ni session"; exit 1; }
+
+  deploy:
+    name: Déploiement (Vercel)
+    needs: [quality, security, image]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    container: node:22-bookworm-slim
+    # Secrets et variables de l'environnement GitHub « staging » (voir docs/DEPLOYMENT.md).
+    environment:
+      name: staging
+      url: ${{ vars.CONSOLE_URL }}
+    concurrency:
+      group: deploy-vercel
+      cancel-in-progress: false
+    env:
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      CONSOLE_URL: ${{ vars.CONSOLE_URL }}
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Vérifier la configuration
+        shell: bash
+        run: |
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID CONSOLE_URL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name manquant dans l'environnement GitHub « staging »" && exit 1
+            fi
+          done
+      - name: Git
+        run: apt-get update -qq && apt-get install -y -qq git > /dev/null
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: CLI Vercel
+        run: npm install --global --no-audit --no-fund vercel@65.12.1
+      - name: Réglages du projet
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Build (révision figée dans l'application)
+        env:
+          CONSOLE_REVISION: ${{ github.sha }}
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Déployer en production Vercel (domaine de la console)
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+      - name: Attendre la nouvelle version et vérifier la console
+        run: |
+          node --input-type=module <<'JS'
+          const base = process.env.CONSOLE_URL.replace(/\/+$/, "");
+          const expected = process.env.GITHUB_SHA.slice(0, 12);
+          const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+          let revision = null;
+          for (let i = 0; i < 40 && revision !== expected; i += 1) {
+            try {
+              const res = await fetch(`${base}/api/health`, { cache: "no-store" });
+              revision = res.ok ? (await res.json()).revision : null;
+            } catch {}
+            if (revision !== expected) await sleep(15_000);
+          }
+          if (revision !== expected) {
+            console.error(`::error::Révision en ligne « ${revision} » au lieu de « ${expected} ».`);
+            process.exit(1);
+          }
+          // La page de connexion lit les secrets Doppler : 200 = secrets valides.
+          const login = await fetch(`${base}/login`, { redirect: "manual" });
+          const csp = login.headers.get("content-security-policy") ?? "";
+          if (login.status !== 200 || !csp.includes("'nonce-")) {
+            console.error(`::error::/login a répondu ${login.status} (secrets Doppler ? CSP ?).`);
+            process.exit(1);
+          }
+          const home = await fetch(`${base}/`, { redirect: "manual" });
+          if (home.status !== 307) {
+            console.error(`::error::/ a répondu ${home.status} au lieu de rediriger vers /login.`);
+            process.exit(1);
+          }
+          console.log(`Console en ligne : révision ${revision}, connexion obligatoire.`);
+          JS

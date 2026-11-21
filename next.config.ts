@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
   output: "standalone", // image Docker minimale (Vercel l'ignore)
   poweredByHeader: false,
   reactStrictMode: true,
+  // Commit construit (injecté par la CI), figé au build : exposé par /api/health.
+  env: { CONSOLE_REVISION: process.env.CONSOLE_REVISION ?? "" },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

@@ -140,11 +140,15 @@ Types : `feat`, `fix`, `chore`, `ci`, `docs`, `test`, `refactor`, `perf`, `build
 | `guards` | Nom de branche, messages de commit, limite de 20 fichiers (PR) |
 | `quality` | lint, typage, tests, build |
 | `security` | `npm audit` (dépendances de production, HIGH et plus), gitleaks sur tout l'historique |
-| `image` | Build Docker, scan Trivy, smoke test de démarrage |
+| `image` | Build Docker, scan Trivy, smoke test (démarrage, fermée par défaut sans secrets) |
+| `deploy` | `main` uniquement : build et déploiement Vercel (`--prebuilt --prod`), attente de la révision sur `/api/health`, contrôle de `/login` et de la redirection de `/` |
+
+Déploiement Vercel (réglages, secrets, Google, DNS, retour arrière) : [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+`GET /api/health` (public, sans secret) renvoie la révision construite (`CONSOLE_REVISION`, figée au build).
 
 ## Feuille de route
 
 1. ~~Secrets Doppler côté serveur et client API admin (`server-only`)~~
 2. ~~Connexion Google (liste blanche d'adresses), CSP par nonce~~
-3. Déploiement Vercel (preview par PR, production sur `main`)
+3. ~~Déploiement Vercel (production sur `main`, après toute la CI)~~
 4. Services · Transactions · Tableau de bord · Utilisateurs · Transferts · À régulariser · Explorateur d'API

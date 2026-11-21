@@ -10,7 +10,8 @@ RUN npm ci --ignore-scripts --no-audit --no-fund
 
 FROM ${NODE_IMAGE} AS build
 WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
+ARG GIT_SHA=""
+ENV NEXT_TELEMETRY_DISABLED=1 CONSOLE_REVISION=${GIT_SHA}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build

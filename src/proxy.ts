@@ -10,7 +10,7 @@ import { getSecrets } from "@/lib/server/secrets";
  * - CSP par nonce : seuls les scripts émis par Next.js pour cette réponse s'exécutent.
  */
 
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/api/health"];
 
 export function buildContentSecurityPolicy(nonce: string, dev: boolean): string {
   return [
@@ -75,5 +75,5 @@ export const proxy = createProxy({
 
 export const config = {
   // Ni les fichiers statiques ni les routes de NextAuth (qui gèrent elles-mêmes la connexion).
-  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt).*)"],
+  matcher: ["/((?!api/auth|api/health|_next/static|_next/image|favicon.ico|robots.txt).*)"],
 };

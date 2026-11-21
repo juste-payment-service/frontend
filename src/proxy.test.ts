@@ -44,6 +44,13 @@ describe("accès à la console", () => {
     expect(response.status).toBe(401);
   });
 
+  it("laisse la sonde de santé accessible sans session (vérification du déploiement)", async () => {
+    const { proxy, getToken } = proxyWith(null);
+    const response = await proxy(request("/api/health"));
+    expect(response.status).toBe(200);
+    expect(getToken).not.toHaveBeenCalled();
+  });
+
   it("laisse la page de connexion accessible sans session", async () => {
     const { proxy } = proxyWith(null);
     const response = await proxy(request("/login"));
