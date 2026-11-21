@@ -34,12 +34,21 @@ const CATALOG: Catalog = {
 };
 
 describe("catalogue des endpoints", () => {
+  it("lit le catalogue complet avec la clé admin (console)", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ data: CATALOG }), { headers: { "Content-Type": "application/json" } }),
+    );
+    const api = createApiClient({ secrets: async () => ({ apiUrl: "https://api.example.com", adminApiKey: "k".repeat(48) }), fetch });
+    await createCatalogApi(api).full();
+    expect(new Headers((fetch.mock.calls[0] as [URL, RequestInit])[1].headers).get("X-Admin-Key")).toBe("k".repeat(48));
+  });
+
   it("lit le catalogue public de l'API, sans clé admin", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(
       new Response(JSON.stringify({ data: CATALOG }), { headers: { "Content-Type": "application/json" } }),
     );
     const api = createApiClient({ secrets: async () => ({ apiUrl: "https://api.example.com", adminApiKey: "k".repeat(48) }), fetch });
-    const catalog = await createCatalogApi(api).get();
+    const catalog = await createCatalogApi(api).integration();
     expect(catalog.groups).toHaveLength(2);
     const [url, init] = fetch.mock.calls[0] as [URL, RequestInit];
     expect(String(url)).toBe("https://api.example.com/v1/meta/endpoints");

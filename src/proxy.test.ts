@@ -51,6 +51,19 @@ describe("accès à la console", () => {
     expect(getToken).not.toHaveBeenCalled();
   });
 
+  it("laisse la documentation publique accessible sans session, avec la CSP", async () => {
+    const { proxy, getToken } = proxyWith(null);
+    const response = await proxy(request(`/docs/${"A".repeat(43)}`));
+    expect(response.status).toBe(200);
+    expect(getToken).not.toHaveBeenCalled();
+    expect(response.headers.get("Content-Security-Policy")).toContain("nonce-");
+  });
+
+  it("ne rend pas publique une route voisine de /docs", async () => {
+    const { proxy } = proxyWith(null);
+    expect((await proxy(request("/docsx"))).status).toBe(307);
+  });
+
   it("laisse la page de connexion accessible sans session", async () => {
     const { proxy } = proxyWith(null);
     const response = await proxy(request("/login"));

@@ -31,7 +31,12 @@ export type Catalog = z.infer<typeof CatalogSchema>;
 
 export function createCatalogApi(api: ReturnType<typeof createApiClient>) {
   return {
-    get: async () => (await api.public("/meta/endpoints", { schema: z.object({ data: CatalogSchema }) })).data,
+    /** Vue complète (console admin) : la clé admin fait renvoyer aussi les routes `/admin/*`. */
+    full: async () =>
+      (await api.admin("/meta/endpoints", { schema: z.object({ data: CatalogSchema }) })).data,
+    /** Vue publique : routes d'intégration seulement (documentation partagée). */
+    integration: async () =>
+      (await api.public("/meta/endpoints", { schema: z.object({ data: CatalogSchema }) })).data,
   };
 }
 
