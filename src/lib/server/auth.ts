@@ -54,3 +54,10 @@ export async function getAdminSession() {
   const session = await getServerSession(options);
   return session && isAllowedEmail(session.user?.email, secrets.auth.adminEmails) ? session : null;
 }
+
+/** Garde des server actions : elles sont appelables directement en POST, la session est revérifiée. */
+export async function requireAdmin() {
+  const session = await getAdminSession();
+  if (!session?.user?.email) throw new Error("Session administrateur requise.");
+  return session;
+}
