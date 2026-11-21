@@ -64,7 +64,7 @@ prestataire de paiement.
 
 - **Google uniquement** (NextAuth 4, `src/lib/server/auth.ts`) : adresse **vérifiée** par Google et
   présente dans `ADMIN_EMAILS`, choix du compte toujours proposé. Session JWT chiffrée de 8 h.
-- **Proxy** (`src/proxy.ts`, avant chaque page) : session obligatoire, adresse revérifiée contre la
+- **Proxy** (`src/proxy.ts`, avant chaque page) : session obligatoire (sauf `/login` et la documentation publique `/docs/*`, dont le jeton est vérifié par l'API), adresse revérifiée contre la
   liste blanche à **chaque requête** (retirer une adresse dans Doppler coupe l'accès sous 5 min,
   sans attendre la fin de la session) ; routes `/api/*` sans session → `401` JSON.
 - **CSP par nonce** posée par le proxy : seuls les scripts émis par Next.js pour la réponse
@@ -177,6 +177,8 @@ Déploiement Vercel (réglages, secrets, Google, DNS, retour arrière) : [`docs/
 | Transferts | `/transfers` | recherche exacte, filtres (statut, service, période, utilisateur payeur ou bénéficiaire), raccourci « en revue » |
 | Détail d'un transfert | `/transfers/{id}` | payeur et bénéficiaire (numéros masqués), montants et frais, mouvements (toutes les tentatives), historique avec motifs ; pour un transfert en revue : relancer le versement ou rembourser le payeur avec un motif obligatoire |
 | Explorateur d'API | `/api-explorer` | remplace Swagger UI : catalogue `GET /v1/meta/endpoints` groupé par tag, recherche, fiche dépliable par endpoint (description du processus, authentification, idempotence, en-têtes et paramètres, schéma du corps en arbre de champs, exemple, exemple `curl` avec des emplacements pour les clés, réponses avec exemples), badge « Bientôt » pour une route prévue |
+| Liens publics | `/api-explorer/links` | partager la documentation sans compte : création (destinataire, expiration facultative), copie, activation / désactivation, suppression, compteur de visites |
+| Documentation publique | `/docs/{jeton}` | **sans session**, lecture seule, routes d'intégration uniquement (jamais `/admin/*`), non indexée ; lien désactivé, expiré ou inconnu : « Lien indisponible » sans autre détail |
 | À régulariser | `/reviews` | dossiers ouverts par défaut (onglets ouverts / clos / tous), filtre par type ; badge du nombre de dossiers ouverts dans la navigation |
 | Détail d'un dossier | `/reviews/{id}` | constat lisible (montants dans leur devise, dates), suivi (signalements, clôture), liens vers la transaction et le service ; clôture avec note obligatoire (5 à 500 caractères, confirmation), sans jamais modifier la transaction |
 

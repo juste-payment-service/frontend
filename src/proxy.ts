@@ -11,6 +11,8 @@ import { getSecrets } from "@/lib/server/secrets";
  */
 
 const PUBLIC_PATHS = ["/login", "/api/health"];
+/** Documentation partagée par lien public : sans session (le jeton est vérifié par l'API). */
+const PUBLIC_PREFIXES = ["/docs/"];
 
 export function buildContentSecurityPolicy(nonce: string, dev: boolean): string {
   return [
@@ -40,7 +42,8 @@ export function createProxy(deps: Deps) {
     const nonce = deps.nonce();
     const csp = buildContentSecurityPolicy(nonce, process.env.NODE_ENV === "development");
 
-    if (!PUBLIC_PATHS.includes(pathname)) {
+    const isPublic = PUBLIC_PATHS.includes(pathname) || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
+    if (!isPublic) {
       const auth = await deps.auth();
       const token = await deps.getToken({ req: request, secret: auth.secret });
       if (!token || !isAllowedEmail(token.email, auth.adminEmails)) {
