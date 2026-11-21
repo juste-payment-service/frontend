@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 /** Les écrans pas encore livrés restent visibles mais désactivés, pour annoncer la suite. */
 const LINKS: { href: string; label: string; ready: boolean }[] = [
   { href: "/services", label: "Services", ready: true },
-  { href: "/transactions", label: "Transactions", ready: false },
+  { href: "/transactions", label: "Transactions", ready: true },
   { href: "/dashboard", label: "Tableau de bord", ready: false },
   { href: "/users", label: "Utilisateurs", ready: false },
   { href: "/transfers", label: "Transferts", ready: false },

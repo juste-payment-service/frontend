@@ -85,9 +85,14 @@ function serviceId(id: string): string {
 
 export function createServicesApi(api: ReturnType<typeof createApiClient>) {
   return {
-    list: (filters: { q?: string; status?: "active" | "disabled"; page?: number }) =>
+    list: (filters: { q?: string; status?: "active" | "disabled"; page?: number; pageSize?: number }) =>
       api.admin("/admin/services", {
-        query: { ...filters, page: filters.page ?? 1, page_size: PAGE_SIZE },
+        query: {
+          q: filters.q,
+          status: filters.status,
+          page: filters.page ?? 1,
+          page_size: filters.pageSize ?? PAGE_SIZE,
+        },
         schema: ServiceList,
       }),
 
