@@ -8,8 +8,8 @@ const LINKS: { href: string; label: string; ready: boolean }[] = [
   { href: "/dashboard", label: "Tableau de bord", ready: true },
   { href: "/services", label: "Services", ready: true },
   { href: "/transactions", label: "Transactions", ready: true },
-  { href: "/users", label: "Utilisateurs", ready: false },
-  { href: "/transfers", label: "Transferts", ready: false },
+  { href: "/users", label: "Utilisateurs", ready: true },
+  { href: "/transfers", label: "Transferts", ready: true },
   { href: "/reviews", label: "À régulariser", ready: true },
   { href: "/api-explorer", label: "Explorateur d'API", ready: false },
 ];

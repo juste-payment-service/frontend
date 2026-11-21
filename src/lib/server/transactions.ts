@@ -139,6 +139,20 @@ function nextDay(value: string): string {
   return date.toISOString().slice(0, 10);
 }
 
+/** Dates saisies (AAAA-MM-JJ) → bornes ISO à l'heure du Bénin ; `to` exclue, jour de fin inclus. */
+export function dateRange(fromRaw: string, toRaw: string) {
+  const range: { fromDate?: string; toDate?: string; from?: string; to?: string } = {};
+  if (validDate(fromRaw)) {
+    range.fromDate = fromRaw;
+    range.from = `${fromRaw}T00:00:00${BENIN_OFFSET}`;
+  }
+  if (validDate(toRaw)) {
+    range.toDate = toRaw;
+    range.to = `${nextDay(toRaw)}T00:00:00${BENIN_OFFSET}`;
+  }
+  return range;
+}
+
 type Search = Record<string, string | string[] | undefined>;
 
 /** Paramètres d'URL → filtres valides (toute valeur inconnue ou mal formée est ignorée). */
@@ -163,14 +177,7 @@ export function parseTransactionFilters(search: Search): TransactionFilters {
     sort: pick("sort", SORTS),
     page: Math.max(1, Number.parseInt(one("page"), 10) || 1),
   };
-  if (validDate(one("from"))) {
-    filters.fromDate = one("from");
-    filters.from = `${one("from")}T00:00:00${BENIN_OFFSET}`;
-  }
-  if (validDate(one("to"))) {
-    filters.toDate = one("to");
-    filters.to = `${nextDay(one("to"))}T00:00:00${BENIN_OFFSET}`;
-  }
+  Object.assign(filters, dateRange(one("from"), one("to")));
   return Object.fromEntries(
     Object.entries(filters).filter(([, value]) => value !== undefined),
   ) as TransactionFilters;
