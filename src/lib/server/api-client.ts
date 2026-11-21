@@ -90,7 +90,7 @@ async function errorFrom(response: Response): Promise<ApiError> {
 }
 
 export function createApiClient(deps: {
-  secrets?: () => Promise<ConsoleSecrets>;
+  secrets?: () => Promise<Pick<ConsoleSecrets, "apiUrl" | "adminApiKey">>;
   fetch?: typeof fetch;
   uuid?: () => string;
 }) {

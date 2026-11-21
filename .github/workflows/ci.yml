@@ -94,12 +94,15 @@ jobs:
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.76.2 \
             image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress \
             "payment-console:${{ github.sha }}"
-      - name: Smoke test (démarrage)
+      - name: Smoke test (démarrage, fermée par défaut sans secrets)
         run: |
           docker run -d --name console -p 3000:3000 "payment-console:${{ github.sha }}"
           for _ in $(seq 1 20); do
-            curl -fsS -o /dev/null http://127.0.0.1:3000/ && exit 0
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/robots.txt || true)
+            [ "$code" = "404" ] && break
             sleep 1
           done
-          docker logs console
-          exit 1
+          [ "$code" = "404" ] || { docker logs console; exit 1; }
+          # Sans DOPPLER_TOKEN, aucune page ne doit être servie.
+          page=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/)
+          [ "$page" != "200" ] || { echo "Page servie sans secrets ni session"; exit 1; }

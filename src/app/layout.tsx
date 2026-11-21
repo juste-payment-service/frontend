@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 
 import "./globals.css";
 
+// Toutes les pages sont rendues à la demande : la CSP par nonce change à chaque réponse.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: { default: "Console Payment Service", template: "%s · Console Payment Service" },
   description: "Administration du service de paiement mutualisé.",

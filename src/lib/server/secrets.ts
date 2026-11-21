@@ -22,12 +22,24 @@ const MAX_ATTEMPTS = 3;
 const TIMEOUT_MS = 5_000;
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
+export type AuthSecrets = {
+  /** Signature et chiffrement des sessions (≥ 32 caractères). */
+  secret: string;
+  googleId: string;
+  googleSecret: string;
+  /** Liste blanche : adresses Google autorisées, en minuscules. */
+  adminEmails: string[];
+};
+
 export type ConsoleSecrets = {
   /** URL de base de l'API, sans `/v1` ni barre finale. */
   apiUrl: string;
   /** Clé admin de l'API : uniquement côté serveur, jamais transmise au navigateur. */
   adminApiKey: string;
+  auth: AuthSecrets;
 };
+
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export class SecretsError extends Error {
   override name = "SecretsError";
@@ -50,6 +62,23 @@ function secretsSchema(production: boolean) {
       }, "URL https attendue (http autorisé seulement vers localhost hors production)")
       .transform((value) => value.replace(/\/+$/, "")),
     ADMIN_API_KEY: z.string().min(32, "32 caractères au moins"),
+    AUTH_SECRET: z.string().min(32, "32 caractères au moins"),
+    AUTH_GOOGLE_ID: z
+      .string()
+      .regex(/^[\w-]+\.apps\.googleusercontent\.com$/, "identifiant client OAuth Google attendu"),
+    AUTH_GOOGLE_SECRET: z.string().min(10, "secret client OAuth Google attendu"),
+    ADMIN_EMAILS: z
+      .string()
+      .transform((value) =>
+        value
+          .split(",")
+          .map((email) => email.trim().toLowerCase())
+          .filter(Boolean),
+      )
+      .refine(
+        (emails) => emails.length > 0 && emails.every((email) => EMAIL_RE.test(email)),
+        "liste d'adresses séparées par des virgules attendue",
+      ),
   });
 }
 
@@ -63,7 +92,17 @@ function validate(raw: Record<string, unknown>, production: boolean): ConsoleSec
     });
     throw new SecretsError(`Secrets Doppler invalides : ${problems.join(", ")}.`);
   }
-  return { apiUrl: parsed.data.PAYMENT_API_URL, adminApiKey: parsed.data.ADMIN_API_KEY };
+  const data = parsed.data;
+  return {
+    apiUrl: data.PAYMENT_API_URL,
+    adminApiKey: data.ADMIN_API_KEY,
+    auth: {
+      secret: data.AUTH_SECRET,
+      googleId: data.AUTH_GOOGLE_ID,
+      googleSecret: data.AUTH_GOOGLE_SECRET,
+      adminEmails: data.ADMIN_EMAILS,
+    },
+  };
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
