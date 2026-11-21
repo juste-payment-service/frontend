@@ -1,6 +1,6 @@
 # Console d'administration — Payment Service
 
-Console Next.js du service de paiement mutualisé (SebPay) : gestion des services, supervision des
+Console Next.js du service de paiement mutualisé (prestataire : FeexPay) : gestion des services, supervision des
 transactions et des transferts, tableau de bord, file « à régulariser » et explorateur d'API.
 
 - Console : `https://payment-service.mrjuste.online` (hébergée sur Vercel)
@@ -12,6 +12,7 @@ transactions et des transferts, tableau de bord, file « à régulariser » et e
 | Élément | Version |
 |---|---|
 | Next.js (App Router) | 16.4.5 |
+| zod (validation des réponses de l'API) | 4.6.7 |
 | React | 19.3.1 |
 | TypeScript (strict, `noUncheckedIndexedAccess`) | 5.9.3 |
 | Tailwind CSS | 4.3.5 |
@@ -43,9 +44,42 @@ Sans Node local : `docker run --rm -it -p 3000:3000 -v "$PWD":/app -w /app node:
 ## Secrets
 
 Aucun secret dans le code ni dans le dépôt. Ils viennent de **Doppler**, projet dédié à la console
-(configs `dev`, `stg`, `prd`), distinct du projet backend : la console n'a jamais accès aux clés
-SebPay. La clé admin de l'API n'est utilisée **que côté serveur** Next.js (route handlers / server
-actions), jamais envoyée au navigateur.
+(configs `dev`, `stg`, `prd`), distinct du projet backend : la console n'a jamais accès aux clés du
+prestataire de paiement.
+
+| Secret | Rôle |
+|---|---|
+| `PAYMENT_API_URL` | URL de base de l'API, sans `/v1` (`https://payment-service-api.mrjuste.online`) ; https obligatoire, `http://localhost` admis hors production |
+| `ADMIN_API_KEY` | clé admin de l'API (≥ 32 caractères), **la même** que dans la config Doppler du backend |
+
+- **Déploiement** : seule la variable `DOPPLER_TOKEN` (jeton de service en lecture seule, une
+  config) est définie chez l'hébergeur ; `src/lib/server/secrets.ts` télécharge les secrets par
+  l'API Doppler, les garde 5 min en mémoire (rotation sans redéploiement) et ne cite jamais une
+  valeur dans une erreur.
+- **Local** : `doppler run -p <projet-console> -c dev -- npm run dev`. Les variables injectées ne sont
+  acceptées que hors production et seulement sous `doppler run` (`DOPPLER_CONFIG` présent).
+
+## Appels à l'API
+
+`src/lib/server/api-client.ts` (`import "server-only"` : toute importation depuis un composant
+client fait échouer le build) :
+
+```ts
+import { z } from "zod";
+import { api } from "@/lib/server/api-client";
+
+const page = await api.admin("/admin/services", {
+  query: { status: "active", page: 1 },
+  schema: z.object({ data: z.array(Service), meta: ListMeta }),
+});
+```
+
+- chemins relatifs à `/v1` uniquement, redirections refusées : la clé admin ne peut partir ailleurs ;
+- `Idempotency-Key` sur toute écriture (à réutiliser pour réessayer la même opération) ;
+- réponse validée par zod (`INVALID_RESPONSE` si elle s'écarte du contrat) ;
+- erreurs en `ApiError` : `status`, `code` du contrat, `message`, `details`, `requestId`
+  (`NETWORK_ERROR` / `TIMEOUT` si l'API est injoignable).
+- Le prestataire (FeexPay aujourd'hui) n'est jamais nommé en dur : la console affiche ce que l'API renvoie.
 
 ## Sécurité
 
@@ -85,7 +119,7 @@ Types : `feat`, `fix`, `chore`, `ci`, `docs`, `test`, `refactor`, `perf`, `build
 
 ## Feuille de route
 
-1. Secrets Doppler côté serveur et client API admin (`server-only`)
+1. ~~Secrets Doppler côté serveur et client API admin (`server-only`)~~
 2. Connexion Google (liste blanche d'adresses), CSP par nonce
 3. Déploiement Vercel (preview par PR, production sur `main`)
 4. Services · Transactions · Tableau de bord · Utilisateurs · Transferts · À régulariser · Explorateur d'API
