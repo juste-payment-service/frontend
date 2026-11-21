@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// Le tableau de bord deviendra la page d'accueil ; en attendant, la gestion des services.
+// Page d'accueil de la console : le tableau de bord.
 export default function HomePage() {
-  redirect("/services");
+  redirect("/dashboard");
 }

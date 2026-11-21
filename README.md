@@ -115,6 +115,16 @@ const page = await api.admin("/admin/services", {
 - Image Docker : sortie `standalone`, utilisateur non-root, npm / corepack / yarn retirés, scan Trivy
   (HIGH / CRITICAL bloquants) en CI.
 
+## Graphiques
+
+Courbes en SVG sans bibliothèque (`src/components/dashboard/line-chart.tsx`, calculs dans
+`src/lib/chart.ts`) : une seule échelle, lignes de 2 px, graduations rondes, trous pour les valeurs
+absentes (jamais d'interpolation inventée), légende dès deux séries, réticule et info-bulle à la
+souris et au clavier (flèches), vue tableau. Palette catégorielle validée pour **4 séries au plus**,
+en clair et en sombre (contrôles daltonisme et contraste) : couleur fixe par service, dans l'ordre
+de la sélection. Deux teintes passent sous 3:1 sur fond clair : la légende et la vue tableau
+compensent. Jetons de couleur dans `src/app/globals.css`.
+
 ## Conventions Git
 
 Mêmes règles que le backend, vérifiées par les hooks (`.githooks`, activés par `npm ci` / `npm install`
@@ -153,6 +163,7 @@ Déploiement Vercel (réglages, secrets, Google, DNS, retour arrière) : [`docs/
 | Services | `/services` | liste (recherche, statut, pagination), statistiques par service |
 | Nouveau service | `/services/new` | création ; identifiant, clé API et secret webhook affichés **une seule fois** |
 | Détail d'un service | `/services/{id}` | identifiants et activité, rotation de la clé API (période de grâce) et du secret webhook, activation / désactivation, configuration (URL de notification, hôtes de retour, transferts et plafonds) |
+| Tableau de bord (accueil) | `/dashboard` | indicateurs par devise (encaissé, décaissé frais compris, frais, solde disponible, paiements, retraits, taux de réussite, en attente) pour tous les services ou un seul ; courbe d'une métrique au choix sur 7 j / 30 j / 90 j / 12 mois ou une période personnalisée (heure du Bénin, 366 jours max), par heure, jour, semaine ou mois, avec jusqu'à 4 services comparés ; vue tableau des valeurs |
 | Transactions | `/transactions` | recherche exacte (UUID, référence client ou prestataire), filtres combinables (service, statut, type, moyen, période à l'heure du Bénin, utilisateur, transfert), tri, pagination ; filtres conservés dans l'URL |
 | Détail d'une transaction | `/transactions/{id}` | opération, parties (numéros masqués), références prestataire, historique, notifications envoyées au service (tentatives, dernier code), métadonnées, rattachement à un transfert ; revérification auprès du prestataire si elle est en attente |
 
@@ -167,4 +178,4 @@ ou le mode sandbox (`/v1/ready`).
 1. ~~Secrets Doppler côté serveur et client API admin (`server-only`)~~
 2. ~~Connexion Google (liste blanche d'adresses), CSP par nonce~~
 3. ~~Déploiement Vercel (production sur `main`, après toute la CI)~~
-4. ~~Services~~ · ~~Transactions~~ · Tableau de bord · Utilisateurs · Transferts · À régulariser · Explorateur d'API
+4. ~~Services~~ · ~~Transactions~~ · ~~Tableau de bord~~ · Utilisateurs · Transferts · À régulariser · Explorateur d'API
