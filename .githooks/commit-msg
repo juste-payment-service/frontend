@@ -1,0 +1,3 @@
+#!/bin/sh
+# Format : <type>(<cas-d-usage>): <tâche effectuée>
+exec node scripts/git-guards.mjs commit-msg "$1"

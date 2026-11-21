@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+node scripts/git-guards.mjs branch
+node scripts/git-guards.mjs files-limit
+npm run --silent typecheck
+npm test --silent
