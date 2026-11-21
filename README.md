@@ -115,6 +115,12 @@ const page = await api.admin("/admin/services", {
 - Image Docker : sortie `standalone`, utilisateur non-root, npm / corepack / yarn retirés, scan Trivy
   (HIGH / CRITICAL bloquants) en CI.
 
+## Rendu Markdown
+
+Les descriptions du contrat sont rendues par `src/lib/markdown.tsx` (paragraphes, listes,
+tableaux, `code`, **gras**) en éléments React : aucun HTML n'est interprété, pas de
+`dangerouslySetInnerHTML`.
+
 ## Graphiques
 
 Courbes en SVG sans bibliothèque (`src/components/dashboard/line-chart.tsx`, calculs dans
@@ -170,6 +176,7 @@ Déploiement Vercel (réglages, secrets, Google, DNS, retour arrière) : [`docs/
 | Détail d'un utilisateur | `/users/{id}` | activité et totaux payés / reçus par service et par devise ; liens vers ses transactions et ses transferts |
 | Transferts | `/transfers` | recherche exacte, filtres (statut, service, période, utilisateur payeur ou bénéficiaire), raccourci « en revue » |
 | Détail d'un transfert | `/transfers/{id}` | payeur et bénéficiaire (numéros masqués), montants et frais, mouvements (toutes les tentatives), historique avec motifs ; pour un transfert en revue : relancer le versement ou rembourser le payeur avec un motif obligatoire |
+| Explorateur d'API | `/api-explorer` | remplace Swagger UI : catalogue `GET /v1/meta/endpoints` groupé par tag, recherche, fiche dépliable par endpoint (description du processus, authentification, idempotence, en-têtes et paramètres, schéma du corps en arbre de champs, exemple, exemple `curl` avec des emplacements pour les clés, réponses avec exemples), badge « Bientôt » pour une route prévue |
 | À régulariser | `/reviews` | dossiers ouverts par défaut (onglets ouverts / clos / tous), filtre par type ; badge du nombre de dossiers ouverts dans la navigation |
 | Détail d'un dossier | `/reviews/{id}` | constat lisible (montants dans leur devise, dates), suivi (signalements, clôture), liens vers la transaction et le service ; clôture avec note obligatoire (5 à 500 caractères, confirmation), sans jamais modifier la transaction |
 
@@ -184,4 +191,4 @@ ou le mode sandbox (`/v1/ready`).
 1. ~~Secrets Doppler côté serveur et client API admin (`server-only`)~~
 2. ~~Connexion Google (liste blanche d'adresses), CSP par nonce~~
 3. ~~Déploiement Vercel (production sur `main`, après toute la CI)~~
-4. ~~Services~~ · ~~Transactions~~ · ~~Tableau de bord~~ · ~~Utilisateurs~~ · ~~Transferts~~ · ~~À régulariser~~ · Explorateur d'API
+4. ~~Services~~ · ~~Transactions~~ · ~~Tableau de bord~~ · ~~Utilisateurs~~ · ~~Transferts~~ · ~~À régulariser~~ · ~~Explorateur d'API~~
