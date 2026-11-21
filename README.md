@@ -146,9 +146,23 @@ Types : `feat`, `fix`, `chore`, `ci`, `docs`, `test`, `refactor`, `perf`, `build
 Déploiement Vercel (réglages, secrets, Google, DNS, retour arrière) : [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 `GET /api/health` (public, sans secret) renvoie la révision construite (`CONSOLE_REVISION`, figée au build).
 
+## Écrans
+
+| Écran | Chemin | Contenu |
+|---|---|---|
+| Services | `/services` | liste (recherche, statut, pagination), statistiques par service |
+| Nouveau service | `/services/new` | création ; identifiant, clé API et secret webhook affichés **une seule fois** |
+| Détail d'un service | `/services/{id}` | identifiants et activité, rotation de la clé API (période de grâce) et du secret webhook, activation / désactivation, configuration (URL de notification, hôtes de retour, transferts et plafonds) |
+
+Organisation : pages en composants serveur (`src/app/(console)`), écritures par **actions serveur**
+(`actions.ts`) qui revérifient la session admin, valident les identifiants reçus et réutilisent la
+clé d'idempotence du formulaire. Les secrets ne transitent qu'une fois, dans la réponse de l'action ;
+rien n'est stocké côté console. Un bandeau signale une API injoignable, un prestataire indisponible
+ou le mode sandbox (`/v1/ready`).
+
 ## Feuille de route
 
 1. ~~Secrets Doppler côté serveur et client API admin (`server-only`)~~
 2. ~~Connexion Google (liste blanche d'adresses), CSP par nonce~~
 3. ~~Déploiement Vercel (production sur `main`, après toute la CI)~~
-4. Services · Transactions · Tableau de bord · Utilisateurs · Transferts · À régulariser · Explorateur d'API
+4. ~~Services~~ · Transactions · Tableau de bord · Utilisateurs · Transferts · À régulariser · Explorateur d'API
