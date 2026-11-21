@@ -139,8 +139,8 @@ export default async function TransactionPage({ params }: { params: Promise<{ id
           {tx.transfer ? (
             <Card title="Transfert">
               <p className="text-sm">{ROLE_LABELS[tx.transfer.role]}</p>
-              <Link href={`/transactions?transfer_id=${tx.transfer.transfer_id}`} className="mt-2 inline-block text-sm underline">
-                Voir tous les mouvements du transfert
+              <Link href={`/transfers/${tx.transfer.transfer_id}`} className="mt-2 inline-block text-sm underline">
+                Voir le transfert
               </Link>
             </Card>
           ) : null}
