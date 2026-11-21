@@ -11,7 +11,7 @@ const LINKS: { href: string; label: string; ready: boolean }[] = [
   { href: "/users", label: "Utilisateurs", ready: true },
   { href: "/transfers", label: "Transferts", ready: true },
   { href: "/reviews", label: "À régulariser", ready: true },
-  { href: "/api-explorer", label: "Explorateur d'API", ready: false },
+  { href: "/api-explorer", label: "Explorateur d'API", ready: true },
 ];
 
 /** `openReviews` : dossiers à régulariser encore ouverts (`null` si l'API n'a pas répondu). */
