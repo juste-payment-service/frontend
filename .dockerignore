@@ -1,0 +1,11 @@
+.git
+.github
+.githooks
+node_modules
+.next
+coverage
+.env
+.env.*
+.vercel
+*.md
+Dockerfile

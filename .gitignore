@@ -1,0 +1,24 @@
+# Dépendances et builds
+node_modules/
+.next/
+out/
+build/
+coverage/
+next-env.d.ts
+*.tsbuildinfo
+
+# Secrets : jamais versionnés (Doppler est la seule source)
+.env
+.env.*
+*.pem
+*.key
+doppler.yaml
+
+# Vercel
+.vercel/
+
+# Éditeurs / OS
+.idea/
+.vscode/
+.DS_Store
+npm-debug.log*
