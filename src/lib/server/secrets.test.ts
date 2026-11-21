@@ -6,6 +6,16 @@ const TOKEN = "dp.st.stg.abcdefghijklmnop";
 const SECRETS = {
   PAYMENT_API_URL: "https://payment-service-api.mrjuste.online",
   ADMIN_API_KEY: "k".repeat(48),
+  AUTH_SECRET: "s".repeat(48),
+  AUTH_GOOGLE_ID: "1234-abc.apps.googleusercontent.com",
+  AUTH_GOOGLE_SECRET: "GOCSPX-abcdefghijkl",
+  ADMIN_EMAILS: " Admin@MrJuste.online, ops@mrjuste.online ,",
+};
+const AUTH = {
+  secret: "s".repeat(48),
+  googleId: "1234-abc.apps.googleusercontent.com",
+  googleSecret: "GOCSPX-abcdefghijkl",
+  adminEmails: ["admin@mrjuste.online", "ops@mrjuste.online"],
 };
 
 function dopplerResponse(body: unknown, status = 200): Response {
@@ -40,6 +50,7 @@ describe("lecture des secrets depuis Doppler", () => {
     await expect(secrets.get()).resolves.toEqual({
       apiUrl: "https://payment-service-api.mrjuste.online",
       adminApiKey: "k".repeat(48),
+      auth: AUTH, // adresses normalisées : minuscules, sans espaces ni entrées vides
     });
 
     const [url, init] = fetch.mock.calls[0]!;
@@ -114,14 +125,28 @@ describe("lecture des secrets depuis Doppler", () => {
   });
 });
 
+describe("secrets de connexion", () => {
+  it.each([
+    ["AUTH_SECRET", "court"],
+    ["AUTH_GOOGLE_ID", "pas-un-client-google"],
+    ["ADMIN_EMAILS", "pas-une-adresse"],
+    ["ADMIN_EMAILS", " , "],
+  ])("refuse %s invalide", async (name, value) => {
+    const { secrets } = store({ responses: [dopplerResponse({ ...SECRETS, [name]: value })] });
+    const error = await secrets.get().catch((e: unknown) => e);
+    expect(String(error)).toMatch(new RegExp(name));
+    expect(String(error)).not.toContain(value.trim() || "§");
+  });
+});
+
 describe("développement local (doppler run)", () => {
   it("lit les secrets injectés par la CLI Doppler, API locale en http admise", async () => {
     const { secrets, fetch } = store({
       env: {
         NODE_ENV: "development",
         DOPPLER_CONFIG: "dev",
+        ...SECRETS,
         PAYMENT_API_URL: "http://localhost:8000",
-        ADMIN_API_KEY: "k".repeat(48),
       },
     });
     await expect(secrets.get()).resolves.toMatchObject({ apiUrl: "http://localhost:8000" });

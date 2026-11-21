@@ -13,6 +13,7 @@ transactions et des transferts, tableau de bord, file « à régulariser » et e
 |---|---|
 | Next.js (App Router) | 16.4.5 |
 | zod (validation des réponses de l'API) | 4.6.7 |
+| NextAuth (connexion Google) | 4.24.15 |
 | React | 19.3.1 |
 | TypeScript (strict, `noUncheckedIndexedAccess`) | 5.9.3 |
 | Tailwind CSS | 4.3.5 |
@@ -56,8 +57,32 @@ prestataire de paiement.
   config) est définie chez l'hébergeur ; `src/lib/server/secrets.ts` télécharge les secrets par
   l'API Doppler, les garde 5 min en mémoire (rotation sans redéploiement) et ne cite jamais une
   valeur dans une erreur.
-- **Local** : `doppler run -p <projet-console> -c dev -- npm run dev`. Les variables injectées ne sont
+- **Local** : `NEXTAUTH_URL=http://localhost:3000 doppler run -p <projet-console> -c dev -- npm run dev`. Les variables injectées ne sont
   acceptées que hors production et seulement sous `doppler run` (`DOPPLER_CONFIG` présent).
+
+## Connexion (Google, liste blanche)
+
+- **Google uniquement** (NextAuth 4, `src/lib/server/auth.ts`) : adresse **vérifiée** par Google et
+  présente dans `ADMIN_EMAILS`, choix du compte toujours proposé. Session JWT chiffrée de 8 h.
+- **Proxy** (`src/proxy.ts`, avant chaque page) : session obligatoire, adresse revérifiée contre la
+  liste blanche à **chaque requête** (retirer une adresse dans Doppler coupe l'accès sous 5 min,
+  sans attendre la fin de la session) ; routes `/api/*` sans session → `401` JSON.
+- **CSP par nonce** posée par le proxy : seuls les scripts émis par Next.js pour la réponse
+  s'exécutent (`strict-dynamic`), aucune ressource tierce, `frame-ancestors 'none'`.
+- Retour après connexion limité aux chemins internes (pas de redirection ouverte).
+
+| Secret Doppler | Rôle |
+|---|---|
+| `AUTH_SECRET` | ≥ 32 caractères aléatoires (`openssl rand -base64 48`) : chiffre les sessions |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | client OAuth Google « Application Web » |
+| `ADMIN_EMAILS` | adresses autorisées, séparées par des virgules |
+
+Variable **non secrète** à définir chez l'hébergeur et en local : `NEXTAUTH_URL` (URL publique de la
+console, ex. `https://payment-service.mrjuste.online` ; `http://localhost:3000` en local).
+
+Client OAuth (Google Cloud Console → *API et services* → *Identifiants*) : type *Application Web*,
+URI de redirection autorisées `https://payment-service.mrjuste.online/api/auth/callback/google` et
+`http://localhost:3000/api/auth/callback/google`.
 
 ## Appels à l'API
 
@@ -83,9 +108,9 @@ const page = await api.admin("/admin/services", {
 
 ## Sécurité
 
-- En-têtes sur toutes les pages : CSP restrictive (`frame-ancestors 'none'`, aucune ressource
-  tierce), HSTS, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Permissions-Policy`,
-  pas d'en-tête `X-Powered-By`. La CSP passera par nonce avec le proxy d'authentification.
+- En-têtes sur toutes les pages : CSP par nonce (voir *Connexion*), HSTS, `X-Frame-Options: DENY`,
+  `Referrer-Policy: no-referrer`, `Permissions-Policy`, pas d'en-tête `X-Powered-By`.
+- Fermée par défaut : sans secrets Doppler valides, aucune page n'est servie.
 - Console jamais indexée (`robots: noindex, nofollow`).
 - Image Docker : sortie `standalone`, utilisateur non-root, npm / corepack / yarn retirés, scan Trivy
   (HIGH / CRITICAL bloquants) en CI.
@@ -120,6 +145,6 @@ Types : `feat`, `fix`, `chore`, `ci`, `docs`, `test`, `refactor`, `perf`, `build
 ## Feuille de route
 
 1. ~~Secrets Doppler côté serveur et client API admin (`server-only`)~~
-2. Connexion Google (liste blanche d'adresses), CSP par nonce
+2. ~~Connexion Google (liste blanche d'adresses), CSP par nonce~~
 3. Déploiement Vercel (preview par PR, production sur `main`)
 4. Services · Transactions · Tableau de bord · Utilisateurs · Transferts · À régulariser · Explorateur d'API
