@@ -166,6 +166,8 @@ Déploiement Vercel (réglages, secrets, Google, DNS, retour arrière) : [`docs/
 | Tableau de bord (accueil) | `/dashboard` | indicateurs par devise (encaissé, décaissé frais compris, frais, solde disponible, paiements, retraits, taux de réussite, en attente) pour tous les services ou un seul ; courbe d'une métrique au choix sur 7 j / 30 j / 90 j / 12 mois ou une période personnalisée (heure du Bénin, 366 jours max), par heure, jour, semaine ou mois, avec jusqu'à 4 services comparés ; vue tableau des valeurs |
 | Transactions | `/transactions` | recherche exacte (UUID, référence client ou prestataire), filtres combinables (service, statut, type, moyen, période à l'heure du Bénin, utilisateur, transfert), tri, pagination ; filtres conservés dans l'URL |
 | Détail d'une transaction | `/transactions/{id}` | opération, parties (numéros masqués), références prestataire, historique, notifications envoyées au service (tentatives, dernier code), métadonnées, rattachement à un transfert ; revérification auprès du prestataire si elle est en attente |
+| À régulariser | `/reviews` | dossiers ouverts par défaut (onglets ouverts / clos / tous), filtre par type ; badge du nombre de dossiers ouverts dans la navigation |
+| Détail d'un dossier | `/reviews/{id}` | constat lisible (montants dans leur devise, dates), suivi (signalements, clôture), liens vers la transaction et le service ; clôture avec note obligatoire (5 à 500 caractères, confirmation), sans jamais modifier la transaction |
 
 Organisation : pages en composants serveur (`src/app/(console)`), écritures par **actions serveur**
 (`actions.ts`) qui revérifient la session admin, valident les identifiants reçus et réutilisent la
@@ -178,4 +180,4 @@ ou le mode sandbox (`/v1/ready`).
 1. ~~Secrets Doppler côté serveur et client API admin (`server-only`)~~
 2. ~~Connexion Google (liste blanche d'adresses), CSP par nonce~~
 3. ~~Déploiement Vercel (production sur `main`, après toute la CI)~~
-4. ~~Services~~ · ~~Transactions~~ · ~~Tableau de bord~~ · Utilisateurs · Transferts · À régulariser · Explorateur d'API
+4. ~~Services~~ · ~~Transactions~~ · ~~Tableau de bord~~ · Utilisateurs · Transferts · ~~À régulariser~~ · Explorateur d'API

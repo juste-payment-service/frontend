@@ -7,6 +7,7 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { Alert } from "@/components/ui";
 import { api } from "@/lib/server/api-client";
 import { getAdminSession } from "@/lib/server/auth";
+import { reviews } from "@/lib/server/reviews";
 
 const Readiness = z.object({
   status: z.enum(["ready", "degraded", "not_ready"]),
@@ -32,6 +33,7 @@ async function apiBanner() {
 export default async function ConsoleLayout({ children }: { children: ReactNode }) {
   const session = await getAdminSession();
   if (!session) redirect("/login"); // défense en profondeur : le proxy filtre déjà
+  const openReviews = await reviews.openCount().catch(() => null);
 
   return (
     <div className="min-h-dvh bg-slate-50 dark:bg-slate-950">
@@ -44,7 +46,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
               <SignOutButton />
             </div>
           </div>
-          <ConsoleNav />
+          <ConsoleNav openReviews={openReviews} />
         </div>
       </header>
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-6">
